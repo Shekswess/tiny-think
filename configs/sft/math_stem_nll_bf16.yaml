@@ -1,0 +1,39 @@
+model_name: facebook/MobileLLM-R1-140M-base
+tokenizer_name: facebook/MobileLLM-R1-140M-base
+dataset:
+  name: Shekswess/tiny-think-sft-math-n-stem
+  split: train
+  num_proc: 16
+trainer:
+  per_device_train_batch_size: 2
+  gradient_accumulation_steps: 4
+  gradient_checkpointing: true
+  num_train_epochs: 3
+  learning_rate: 0.00008
+  max_length: 4096
+  weight_decay: 0.0
+  warmup_ratio: 0.1
+  lr_scheduler_type: cosine
+  use_liger_kernel: true
+  bf16: true
+  fp16: false
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  logging_steps: 1
+  assistant_only_loss: true
+  save_total_limit: 2
+  max_grad_norm: 1.0
+  output_dir: outputs/hypothesis_a/sft/math_stem/loss-nll-dtype-bf16-e3-bs8
+  report_to: wandb
+  run_name: hA-sft-math-stem-loss-nll-bf16-e3-bs8
+  push_to_hub: true
+  hub_model_id: Shekswess/tiny-think-sft-math-stem-loss-nll-bf16-e3-bs8
+  seed: 42
+  dataloader_drop_last: true
+  dataloader_persistent_workers: true
+  dataloader_pin_memory: true
+  dataloader_num_workers: 12
+  neftune_noise_alpha: 0.02
+  log_level: info
+  loss_type: nll

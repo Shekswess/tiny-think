@@ -1,0 +1,5 @@
+MATH & STEM DATA:
+- allenai/SYNTHETIC-2-SFT-cn-fltrd-final-ngram-filtered-chinese-filtered
+- gsm8k
+- saumyamalik/OpenThoughts3-full-filtered-math-decontam-v2
+- saumyamalik/OpenThoughts3-full-filtered-science-decontam-v2

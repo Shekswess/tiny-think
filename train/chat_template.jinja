@@ -1,0 +1,34 @@
+{{- bos_token }}
+
+{# --- Extract system message (optional) --- #}
+{%- if messages and messages[0]['role'] == 'system' %}
+  {%- set system_message = messages[0]['content'] | trim %}
+  {%- set messages = messages[1:] %}
+{%- else %}
+  {%- set system_message = "Respond with your reasoning wrapped in <think>...</think>, then provide the final answer within \\\\boxed{}." %}
+{%- endif %}
+
+{# --- System block --- #}
+{{- "<|start_header_id|>system<|end_header_id|>\n\n" }}
+{{- system_message }}
+{{- "<|eot_id|>" }}
+
+{# --- Render all remaining messages --- #}
+{%- for message in messages %}
+  {%- if message['role'] in ['system', 'user', 'assistant'] %}
+    {%- if message['role'] == 'assistant' %}
+      {{- "<|start_header_id|>assistant<|end_header_id|>\n\n" }}
+      {%- generation %}
+      {{- message['content'] | trim }}
+      {%- endgeneration %}
+      {{- "<|eot_id|>" }}
+    {%- else %}
+      {{- "<|start_header_id|>" + message['role'] + "<|end_header_id|>\n\n" + (message['content'] | trim) + "<|eot_id|>" }}
+    {%- endif %}
+  {%- endif %}
+{%- endfor %}
+
+{# --- Generation prompt --- #}
+{%- if add_generation_prompt %}
+  {{- "<|start_header_id|>assistant<|end_header_id|>\n\n" }}
+{%- endif %}

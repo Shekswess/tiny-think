@@ -1,0 +1,6 @@
+MATH & STEM DATA:
+- OpenThoughts3-full-filtered-science-no-cot
+- tulu-3-sft-personas-algebra
+- tulu-3-sft-personas-math
+- tulu-3-sft-personas-math-grade
+- tulu_v3.9_open_math_2_gsm8k_50k
