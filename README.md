@@ -8,15 +8,9 @@
 </p>
 
 <p align="center">
-  <a href="assets/paper.pdf">
-    <img src="https://img.shields.io/badge/paper-PDF-blue?style=for-the-badge" alt="Paper PDF">
-  </a>
-  <a href="https://huggingface.co/collections/Shekswess/tiny-think">
-    <img src="https://img.shields.io/badge/Hugging%20Face-collection-ffcc00?style=for-the-badge" alt="HF Collection">
-  </a>
+   <a href="assets/paper.pdf">📄 <strong>Paper</strong></a> &nbsp; | &nbsp;
+   <a href="https://huggingface.co/collections/Shekswess/tiny-think">🤗 <strong>Hugging Face Collection</strong></a>
 </p>
-
----
 
 ## About
 
@@ -33,7 +27,9 @@ Everything here is designed to be:
 - reproducible
 - runnable on a single consumer GPU
 
----
+## Abstract
+
+We present Tiny Think, a two-stage post-training recipe for 140M-parameter language models designed for single-GPU training environments. Our approach combines supervised fine-tuning on 60M tokens of math and STEM data with explicit chain-of-thought traces, followed by lightweight preference optimization on 10M tokens. The central finding of this work is that preference optimization at this scale functions as a calibration mechanism rather than a capability amplifier: while it successfully boosts GSM8K accuracy to 9.40% (outperforming all sub-300M baselines), it simultaneously induces a "general reasoning tax"—a substantial degradation in broad reasoning (BBH: −10.66 pp) and instruction-following (IFEval: −5.18 pp). These results demonstrate that while strong mathematical reasoning can be unlocked in tiny models, careful multi-objective evaluation is essential to navigate the trade-offs between domain-specific excellence and general-purpose capabilities.
 
 ## Key ideas (from the paper)
 
@@ -41,8 +37,6 @@ Everything here is designed to be:
 - Reasoning-focused **SFT alone** already reaches strong GSM8K performance for this scale.
 - **Preference optimization (DPO / APO)** mainly acts as *calibration*, not free capability gain.
 - Improving math accuracy often comes with a **tradeoff in general reasoning** (the “general reasoning tax”).
-
----
 
 ## Constraints (by design)
 
@@ -54,19 +48,9 @@ Everything here is designed to be:
 
 These constraints are intentional and reflect the experimental setup in the paper.
 
----
-
-## Base model
-
-```
-facebook/MobileLLM-R1-140M-base
-```
-
----
-
 ## Training overview
 
-Tiny Think uses a simple **two-stage post-training recipe**:
+Tiny Think is based around **facebook/MobileLLM-R1-140M-base** as a base model and it uses a simple **two-stage post-training recipe**:
 
 **Stage A — Supervised Fine-Tuning (SFT)**
 - Math + STEM data with explicit reasoning traces (`<think>`)
@@ -80,7 +64,10 @@ Tiny Think uses a simple **two-stage post-training recipe**:
 
 Stage B sharpens solution selection but may reduce broad reasoning ability.
 
----
+| Stage | Objective | Tokens | Objective Function | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **Stage A: SFT** | Teach structured `<think>` reasoning traces in Math/STEM | 60M | NLL or DFT | Complete |
+| **Stage B: Pref.** | Calibrate solution selection (DPO/APO) | 10M | DPO or APO-zero | Complete |
 
 ## Evaluation
 
@@ -91,8 +78,6 @@ Evaluation is done with:
 Benchmarks include GSM8K, MATH500, BBH, IFEval, and several STEM tasks.
 
 All evaluation settings match those used in the paper.
-
----
 
 ## Repository layout
 
@@ -108,8 +93,6 @@ train/                 # training scripts
   dpo.py
 eval/                  # evaluation entrypoints (vLLM + lm-eval)
 ```
-
----
 
 ## Setup
 
@@ -130,8 +113,6 @@ uv pip install liger-kernel
 uv pip install kernels
 uv pip install wandb
 ```
-
----
 
 ## Running
 
@@ -155,17 +136,16 @@ Math-only mode:
 MODE=math_eval ./eval/run_eval_vllm_multi.sh
 ```
 
----
-
 ## What this repo is (and isn’t)
 
 ✔ Research code for controlled experiments on tiny models
 
 ✘ Production system
+
 ✘ General-purpose chatbot
+
 ✘ Multi-GPU training framework
 
----
 
 ## Citation
 
@@ -178,8 +158,6 @@ If you use this repository, please cite the paper.
   year={2026}
 }
 ```
-
----
 
 ## License
 
