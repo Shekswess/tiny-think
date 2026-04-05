@@ -8,100 +8,121 @@
 </p>
 
 <p align="center">
-   <a href="assets/paper.pdf">📄 <strong>Paper</strong></a> &nbsp; | &nbsp;
-   <a href="https://huggingface.co/collections/Shekswess/tiny-think">🤗 <strong>Hugging Face Collection</strong></a>
+  <a href="assets/paper.pdf">📄 <strong>Camera-Ready Paper</strong></a> &nbsp; | &nbsp;
+  <a href="https://huggingface.co/collections/Shekswess/tiny-think">🤗 <strong>Hugging Face Collection</strong></a>
 </p>
 
 ## About
 
-**Tiny Think** is the official research codebase for the paper:
+**Tiny Think** is the official research codebase for:
 
 > **Tiny Think: Reasoning-First Post-Training for Tiny Math and STEM Language Models**
 
-The goal of this repo is simple:
+This repository studies a simple question:
 
-> **Understand what post-training actually does to reasoning in very small language models under strict hardware constraints.**
+> **What does post-training actually do to reasoning in very small language models under strict hardware constraints?**
 
-Everything here is designed to be:
+The project is intentionally:
 - minimal
 - reproducible
 - runnable on a single consumer GPU
 
-## Abstract
+## Why This Repo Exists
 
-We present Tiny Think, a two-stage post-training recipe for 140M-parameter language models designed for single-GPU training environments. Our approach combines supervised fine-tuning on 60M tokens of math and STEM data with explicit chain-of-thought traces, followed by lightweight preference optimization on 10M tokens. The central finding of this work is that preference optimization at this scale functions as a calibration mechanism rather than a capability amplifier: while it successfully boosts GSM8K accuracy to 9.40% (outperforming all sub-300M baselines), it simultaneously induces a "general reasoning tax"—a substantial degradation in broad reasoning (BBH: −10.66 pp) and instruction-following (IFEval: −5.18 pp). These results demonstrate that while strong mathematical reasoning can be unlocked in tiny models, careful multi-objective evaluation is essential to navigate the trade-offs between domain-specific excellence and general-purpose capabilities.
+Tiny models are attractive because they are cheap, fast, and practical to run locally. But once you push reasoning-style post-training into the `140M` regime, the behavior becomes less obvious:
+- supervised fine-tuning can improve math behavior,
+- preference optimization can further improve task-specific math accuracy,
+- but those gains can come with regressions in broader reasoning and instruction following.
 
-## Key ideas (from the paper)
+This repo exists to make that tradeoff concrete, reproducible, and easy to inspect.
 
-- Full fine-tuning of a **140M parameter model** can yield non-trivial math reasoning ability.
-- Reasoning-focused **SFT alone** already reaches strong GSM8K performance for this scale.
-- **Preference optimization (DPO / APO)** mainly acts as *calibration*, not free capability gain.
-- Improving math accuracy often comes with a **tradeoff in general reasoning** (the “general reasoning tax”).
+## Headline Results
 
-## Constraints (by design)
+The main paper result is not just that post-training helps math, but that it can also introduce a measurable **general reasoning tax**.
 
+| Checkpoint | GSM8K | BBH | IFEval | Interpretation |
+| :--- | ---: | ---: | ---: | :--- |
+| `SFT (NLL; epoch 2)` | `8.04` | `23.84` | `21.63` | Strongest balanced SFT checkpoint |
+| `DPO (beta=1, lr=3e-6)` | `9.40` | `13.18` | `16.45` | Best GSM8K, but broad reasoning regresses |
+| `APO-zero (beta=0.5, lr=3e-6)` | `8.26` | `12.01` | `16.08` | Similar tradeoff pattern under APO |
+
+In other words:
+- full fine-tuning at `140M` is enough to produce non-trivial math reasoning,
+- preference optimization behaves more like **calibration** than free capability gain,
+- math-only evaluation would miss important regressions.
+
+## Artifacts
+
+- Paper PDF: [`assets/paper.pdf`](assets/paper.pdf)
+- Model collection: [Hugging Face Collection](https://huggingface.co/collections/Shekswess/tiny-think)
+- Main SFT config: [`configs/sft/math_stem_nll_bf16.yaml`](configs/sft/math_stem_nll_bf16.yaml)
+- Main DPO config: [`configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml`](configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml)
+- Main APO config: [`configs/dpo/math_stem_apo_zero_beta0_5_lr3e_6_e1_bs8.yaml`](configs/dpo/math_stem_apo_zero_beta0_5_lr3e_6_e1_bs8.yaml)
+- Evaluation entrypoint: [`eval/run_eval_vllm_multi.sh`](eval/run_eval_vllm_multi.sh)
+
+## Experimental Scope
+
+These constraints are deliberate and define the paper:
 - **Single machine only**
-- **Single GPU** (RTX 5060 Ti, 16 GB VRAM)
+- **Single GPU** (`RTX 5060 Ti`, `16 GB` VRAM)
 - **No distributed training**
+- **No DeepSpeed / FSDP**
 - **No LoRA / PEFT**
 - **Full fine-tuning only**
+- Base model fixed to `facebook/MobileLLM-R1-140M-base`
 
-These constraints are intentional and reflect the experimental setup in the paper.
+This is not a generic training framework. It is a controlled research repo for studying tiny-model post-training under tight resource limits.
 
-## Training overview
+## Training Overview
 
-Tiny Think is based around **facebook/MobileLLM-R1-140M-base** as a base model and it uses a simple **two-stage post-training recipe**:
+Tiny Think uses a simple two-stage post-training recipe:
 
-**Stage A — Supervised Fine-Tuning (SFT)**
-- Math + STEM data with explicit reasoning traces (`<think>`)
-- ~60M tokens
-- NLL or DFT objectives
+**Stage A - Supervised Fine-Tuning (SFT)**
+- math + STEM data with explicit `<think>` traces
+- about `60M` tokens
+- `NLL` or `DFT` objectives
 
-**Stage B — Preference Optimization**
-- Math/STEM preference pairs
-- ~10M tokens
-- DPO or APO-zero
+**Stage B - Preference Optimization**
+- math/STEM preference pairs
+- about `10M` tokens
+- `DPO` or `APO-zero`
 
-Stage B sharpens solution selection but may reduce broad reasoning ability.
+Stage B improves solution selection, but it can also narrow behavior and hurt broader reasoning.
 
-| Stage | Objective | Tokens | Objective Function | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| **Stage A: SFT** | Teach structured `<think>` reasoning traces in Math/STEM | 60M | NLL or DFT | Complete |
-| **Stage B: Pref.** | Calibrate solution selection (DPO/APO) | 10M | DPO or APO-zero | Complete |
+| Stage | Goal | Data Budget | Objective |
+| :--- | :--- | :--- | :--- |
+| `Stage A: SFT` | Teach structured reasoning traces in math/STEM | `60M` tokens | `NLL` or `DFT` |
+| `Stage B: Preference` | Calibrate solution selection | `10M` tokens | `DPO` or `APO-zero` |
 
-## Evaluation
+## Repository Layout
 
-Evaluation is done with:
-- **vLLM** for inference
-- **lm-eval** for benchmarks
-
-Benchmarks include GSM8K, MATH500, BBH, IFEval, and several STEM tasks.
-
-All evaluation settings match those used in the paper.
-
-## Repository layout
-
-```
-assets/                # logo + paper PDF
-configs/               # YAML configs used in experiments
+```text
+assets/                # logo + camera-ready paper PDF
+configs/               # experiment configs used in the paper
   sft/
   dpo/
-data/                  # dataset preparation utilities
+data/                  # dataset download / preparation utilities
   sources/
-train/                 # training scripts
-  sft.py
-  dpo.py
-eval/                  # evaluation entrypoints (vLLM + lm-eval)
+train/                 # SFT and preference-optimization training entrypoints
+eval/                  # vLLM + lm-eval evaluation entrypoints
 ```
 
-## Setup
+## Quickstart
 
-This repo uses **Python 3.12 + uv**.
+This repository uses **Python 3.12 + uv** and expects a local `.venv`.
+
+### 1. Create or activate the environment
 
 ```bash
-uv venv .venv --python=3.12 --seed
-source .venv/bin/activate
+if [ -d ".venv" ]; then
+  source .venv/bin/activate
+else
+  uv venv .venv --python=3.12 --seed
+  source .venv/bin/activate
+fi
 ```
+
+### 2. Install dependencies in the required order
 
 ```bash
 uv pip install "lm-eval[api]"
@@ -114,38 +135,70 @@ uv pip install kernels
 uv pip install wandb
 ```
 
-## Running
+### 3. Inspect or prepare dataset sources
 
-**SFT**
+The paper datasets are derived from `allenai/Dolci-Think-SFT-7B` and `allenai/Dolci-Think-DPO-7B`. Repository utilities for source inspection and dataset preparation live under [`data/`](data/).
+
+Examples:
+
+```bash
+python data/download_dolci_think_sft.py
+python data/download_dolci_think_dpo.py
+```
+
+### 4. Run the main SFT stage
+
 ```bash
 python train/sft.py --config-path configs/sft/math_stem_nll_bf16.yaml
 ```
 
-**Preference optimization**
+### 5. Run the main DPO stage
+
 ```bash
 python train/dpo.py --config-path configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml
 ```
 
-**Evaluation**
+### 6. Evaluate checkpoints
+
+Full evaluation sweep:
+
 ```bash
 ./eval/run_eval_vllm_multi.sh
 ```
 
-Math-only mode:
+Paper-style math evaluation:
+
 ```bash
-MODE=math_eval ./eval/run_eval_vllm_multi.sh
+MODE=math_eval MODEL_ID=Shekswess/tiny-think-dpo-math-stem-dpo-beta1-lr3e-6-e1-bs8 ./eval/run_eval_vllm_multi.sh
 ```
 
-## What this repo is (and isn’t)
+## Evaluation
 
-✔ Research code for controlled experiments on tiny models
+Evaluation uses:
+- **vLLM** for inference
+- **lm-eval** for benchmark execution
 
-✘ Production system
+Benchmarks used in the paper include:
+- `GSM8K`
+- `MATH500`
+- `BBH`
+- `IFEval`
+- STEM-oriented tasks such as `MMLU-STEM`, `ARC-Challenge`, `OpenBookQA`, `GPQA`, and `PIQA`
 
-✘ General-purpose chatbot
+The evaluation scripts are designed to follow the same reasoning-oriented setup used in the paper.
 
-✘ Multi-GPU training framework
+## What This Repo Is And Is Not
 
+This repo is:
+- research code for controlled tiny-model post-training experiments
+- optimized for local reproducibility on one consumer GPU
+- focused on understanding tradeoffs, not just maximizing a single benchmark
+
+This repo is not:
+- a production system
+- a general-purpose chatbot stack
+- a distributed training framework
+- a PEFT / LoRA benchmark suite
 
 ## Citation
 
@@ -161,4 +214,4 @@ If you use this repository, please cite the paper.
 
 ## License
 
-Apache-2.0. See `LICENSE`.
+Apache-2.0. See [`LICENSE`](LICENSE).
