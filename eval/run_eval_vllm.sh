@@ -101,7 +101,6 @@ fi
 
 # Optional: provide an HF token for gated models.
 # Example: HF_TOKEN=hf_... ./run_eval_vllm.sh 
-HF_TOKEN="${HF_TOKEN:-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}"
 if [[ -n "$HF_TOKEN" ]]; then
   export HF_TOKEN
   export HUGGINGFACE_HUB_TOKEN="${HUGGINGFACE_HUB_TOKEN:-$HF_TOKEN}"
