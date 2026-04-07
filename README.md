@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="assets/paper.pdf">📄 <strong>Camera-Ready Paper</strong></a> &nbsp; | &nbsp;
+  <!-- <a href="assets/paper.pdf">📄 <strong>Camera-Ready Paper</strong></a> &nbsp; | &nbsp; -->
   <a href="https://huggingface.co/collections/Shekswess/tiny-think">🤗 <strong>Hugging Face Collection</strong></a>
 </p>
 
@@ -38,7 +38,7 @@ This repo exists to make that tradeoff concrete, reproducible, and easy to inspe
 
 ## Headline Results
 
-The main paper result is not just that post-training helps math, but that it can also introduce a measurable **general reasoning tax**.
+The main result is not just that post-training helps math, but that it can also introduce a measurable **general reasoning tax**.
 
 | Checkpoint | GSM8K | BBH | IFEval | Interpretation |
 | :--- | ---: | ---: | ---: | :--- |
@@ -53,7 +53,6 @@ In other words:
 
 ## Artifacts
 
-- Paper PDF: [`assets/paper.pdf`](assets/paper.pdf)
 - Model collection: [Hugging Face Collection](https://huggingface.co/collections/Shekswess/tiny-think)
 - Main SFT config: [`configs/sft/math_stem_nll_bf16.yaml`](configs/sft/math_stem_nll_bf16.yaml)
 - Main DPO config: [`configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml`](configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml)
@@ -62,7 +61,7 @@ In other words:
 
 ## Experimental Scope
 
-These constraints are deliberate and define the paper:
+These constraints are deliberate:
 - **Single machine only**
 - **Single GPU** (`RTX 5060 Ti`, `16 GB` VRAM)
 - **No distributed training**
@@ -97,8 +96,8 @@ Stage B improves solution selection, but it can also narrow behavior and hurt br
 ## Repository Layout
 
 ```text
-assets/                # logo + camera-ready paper PDF
-configs/               # experiment configs used in the paper
+assets/                # logo
+configs/               # experiment configs
   sft/
   dpo/
 data/                  # dataset download / preparation utilities
@@ -137,7 +136,7 @@ uv pip install wandb
 
 ### 3. Inspect or prepare dataset sources
 
-The paper datasets are derived from `allenai/Dolci-Think-SFT-7B` and `allenai/Dolci-Think-DPO-7B`. Repository utilities for source inspection and dataset preparation live under [`data/`](data/).
+The datasets are derived from `allenai/Dolci-Think-SFT-7B` and `allenai/Dolci-Think-DPO-7B`. Repository utilities for source inspection and dataset preparation live under [`data/`](data/).
 
 Examples:
 
@@ -178,14 +177,14 @@ Evaluation uses:
 - **vLLM** for inference
 - **lm-eval** for benchmark execution
 
-Benchmarks used in the paper include:
+Benchmarks used include:
 - `GSM8K`
 - `MATH500`
 - `BBH`
 - `IFEval`
 - STEM-oriented tasks such as `MMLU-STEM`, `ARC-Challenge`, `OpenBookQA`, `GPQA`, and `PIQA`
 
-The evaluation scripts are designed to follow the same reasoning-oriented setup used in the paper.
+The evaluation scripts are designed to follow the same reasoning-oriented setup used in MobileLLM-R1.
 
 ## What This Repo Is And Is Not
 
@@ -202,7 +201,7 @@ This repo is not:
 
 ## Citation
 
-If you use this repository, please cite the paper.
+If you use this repository, please cite.
 
 ```bibtex
 @article{jakimovski2026tinythink,
