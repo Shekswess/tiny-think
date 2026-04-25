@@ -8,7 +8,8 @@
 </p>
 
 <p align="center">
-  <!-- <a href="assets/paper.pdf">📄 <strong>Camera-Ready Paper</strong></a> &nbsp; | &nbsp; -->
+  <a href="tiny_think_paper.pdf">📄 <strong>Paper</strong></a> &nbsp; | &nbsp;
+  <a href="tiny-think-presentation.pdf">🖥️ <strong>Presentation</strong></a> &nbsp; | &nbsp;
   <a href="https://huggingface.co/collections/Shekswess/tiny-think">🤗 <strong>Hugging Face Collection</strong></a>
 </p>
 
@@ -53,6 +54,8 @@ In other words:
 
 ## Artifacts
 
+- Paper: [`tiny_think_paper.pdf`](tiny_think_paper.pdf)
+- Presentation: [`tiny-think-presentation.pdf`](tiny-think-presentation.pdf)
 - Model collection: [Hugging Face Collection](https://huggingface.co/collections/Shekswess/tiny-think)
 - Main SFT config: [`configs/sft/math_stem_nll_bf16.yaml`](configs/sft/math_stem_nll_bf16.yaml)
 - Main DPO config: [`configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml`](configs/dpo/math_stem_dpo_beta1_lr3e_6_e1_bs8.yaml)
@@ -104,6 +107,8 @@ data/                  # dataset download / preparation utilities
   sources/
 train/                 # SFT and preference-optimization training entrypoints
 eval/                  # vLLM + lm-eval evaluation entrypoints
+tiny_think_paper.pdf          # paper
+tiny-think-presentation.pdf   # paper presentation
 ```
 
 ## Quickstart
